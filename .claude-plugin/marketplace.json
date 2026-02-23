@@ -1,0 +1,33 @@
+{
+  "name": "ignite-plugin",
+  "id": "ignite-plugin",
+  "owner": {
+    "name": "rgaleev"
+  },
+  "metadata": {
+    "description": "Project creation pipeline: idea → PRD → interactive mockups → design system → CLAUDE.md → GSD handoff",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "ignite",
+      "source": "./",
+      "description": "Project creation pipeline with 5 skills: prd (PRD generation), mockup (interactive HTML mockups with annotation overlay), review (feedback triage and PRD sync), design (design system with style options and token application), bootstrap (CLAUDE.md and GSD planning files generation).",
+      "version": "0.1.0",
+      "author": {
+        "name": "rgaleev"
+      },
+      "keywords": [
+        "project-creation",
+        "prd",
+        "mockups",
+        "design",
+        "bootstrap",
+        "gsd",
+        "pipeline"
+      ],
+      "category": "workflow",
+      "strict": false
+    }
+  ]
+}
