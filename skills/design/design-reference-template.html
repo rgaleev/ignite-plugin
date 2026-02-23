@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{OPTION_NAME}} — {{PROJECT_NAME}} Design Option</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  {{GOOGLE_FONTS_LINK}}
+  <style>
+    :root {
+      /* Colors */
+      --color-primary: {{COLOR_PRIMARY}};
+      --color-primary-hover: {{COLOR_PRIMARY_HOVER}};
+      --color-secondary: {{COLOR_SECONDARY}};
+      --color-accent: {{COLOR_ACCENT}};
+      --color-surface: {{COLOR_SURFACE}};
+      --color-surface-alt: {{COLOR_SURFACE_ALT}};
+      --color-background: {{COLOR_BACKGROUND}};
+      --color-border: {{COLOR_BORDER}};
+      --color-text: {{COLOR_TEXT}};
+      --color-text-muted: {{COLOR_TEXT_MUTED}};
+      --color-success: {{COLOR_SUCCESS}};
+      --color-warning: {{COLOR_WARNING}};
+      --color-error: {{COLOR_ERROR}};
+
+      /* Typography */
+      --font-heading: {{FONT_HEADING}};
+      --font-body: {{FONT_BODY}};
+      --font-mono: {{FONT_MONO}};
+
+      /* Spacing & Shapes */
+      --radius-sm: {{RADIUS_SM}};
+      --radius-md: {{RADIUS_MD}};
+      --radius-lg: {{RADIUS_LG}};
+      --shadow-sm: {{SHADOW_SM}};
+      --shadow-md: {{SHADOW_MD}};
+      --shadow-lg: {{SHADOW_LG}};
+    }
+
+    body { font-family: var(--font-body); color: var(--color-text); background: var(--color-background); }
+    h1, h2, h3, h4 { font-family: var(--font-heading); }
+    code, pre { font-family: var(--font-mono); }
+  </style>
+</head>
+<body class="min-h-screen p-8">
+  <div class="max-w-4xl mx-auto space-y-12">
+
+    <!-- Header -->
+    <header>
+      <h1 class="text-3xl font-bold mb-2">{{OPTION_NAME}}</h1>
+      <p class="text-lg" style="color: var(--color-text-muted);">{{OPTION_DESCRIPTION}}</p>
+    </header>
+
+    <!-- Color Palette -->
+    <section>
+      <h2 class="text-xl font-semibold mb-4">Color Palette</h2>
+      <div class="grid grid-cols-5 gap-4">
+        {{COLOR_SWATCHES}}
+      </div>
+    </section>
+
+    <!-- Typography -->
+    <section>
+      <h2 class="text-xl font-semibold mb-4">Typography</h2>
+      <div class="space-y-4" style="background: var(--color-surface); padding: 24px; border-radius: var(--radius-lg);">
+        <div>
+          <span style="color: var(--color-text-muted); font-size: 12px;">Heading / {{FONT_HEADING_NAME}}</span>
+          <h3 class="text-2xl font-bold">The quick brown fox jumps over the lazy dog</h3>
+        </div>
+        <div>
+          <span style="color: var(--color-text-muted); font-size: 12px;">Body / {{FONT_BODY_NAME}}</span>
+          <p>The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.</p>
+        </div>
+        <div>
+          <span style="color: var(--color-text-muted); font-size: 12px;">Mono / {{FONT_MONO_NAME}}</span>
+          <code style="font-size: 14px;">const data = await fetchPhotos({ limit: 50 });</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- Buttons -->
+    <section>
+      <h2 class="text-xl font-semibold mb-4">Buttons</h2>
+      <div class="flex gap-4 items-center">
+        <button style="background: var(--color-primary); color: white; padding: 8px 20px; border-radius: var(--radius-md); font-weight: 500;">Primary Button</button>
+        <button style="background: transparent; border: 1px solid var(--color-border); color: var(--color-text); padding: 8px 20px; border-radius: var(--radius-md);">Secondary Button</button>
+        <button style="background: var(--color-error); color: white; padding: 8px 20px; border-radius: var(--radius-md);">Danger Button</button>
+      </div>
+    </section>
+
+    <!-- Cards -->
+    <section>
+      <h2 class="text-xl font-semibold mb-4">Cards</h2>
+      <div class="grid grid-cols-3 gap-6">
+        {{SAMPLE_CARDS}}
+      </div>
+    </section>
+
+    <!-- Form Elements -->
+    <section>
+      <h2 class="text-xl font-semibold mb-4">Form Elements</h2>
+      <div style="background: var(--color-surface); padding: 24px; border-radius: var(--radius-lg); max-width: 400px;">
+        <div class="space-y-4">
+          <div>
+            <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Text Input</label>
+            <input type="text" placeholder="Enter value..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); box-sizing: border-box;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Select</label>
+            <select style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); box-sizing: border-box;">
+              <option>Option A</option>
+              <option>Option B</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Status Indicators -->
+    <section>
+      <h2 class="text-xl font-semibold mb-4">Status Indicators</h2>
+      <div class="flex gap-3">
+        <span style="background: var(--color-success); color: white; padding: 2px 10px; border-radius: 999px; font-size: 13px;">Success</span>
+        <span style="background: var(--color-warning); color: white; padding: 2px 10px; border-radius: 999px; font-size: 13px;">Warning</span>
+        <span style="background: var(--color-error); color: white; padding: 2px 10px; border-radius: 999px; font-size: 13px;">Error</span>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Feedback overlay (added by skill, not in template) -->
+</body>
+</html>

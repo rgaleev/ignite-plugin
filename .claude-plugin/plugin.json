@@ -1,0 +1,8 @@
+{
+  "name": "ignite",
+  "description": "Project creation pipeline: idea → PRD → interactive mockups → design system → CLAUDE.md → GSD handoff",
+  "version": "0.1.0",
+  "author": { "name": "gromi" },
+  "license": "MIT",
+  "keywords": ["project-creation", "prd", "mockups", "design", "bootstrap"]
+}
