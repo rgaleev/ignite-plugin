@@ -409,18 +409,24 @@ const FeedbackOverlay = (() => {
   }
 
   // --- Popup ---
+  function findExistingComment(el) {
+    const selector = getSelector(el);
+    return feedback.comments.find(c =>
+      c.type === 'element' && c.status === 'open' && c.selector === selector
+    );
+  }
+
   function showPopup(comment, anchor) {
     document.querySelectorAll('.fb-popup').forEach(p => p.remove());
     const popup = document.createElement('div');
     popup.className = 'fb-popup';
 
-    const isNew = !comment.comment && comment.status === 'open';
     popup.innerHTML = `
       <textarea placeholder="What should change here?">${comment.comment || ''}</textarea>
       <div class="fb-actions">
-        <button class="fb-save">${isNew ? 'Add' : 'Update'}</button>
-        ${!isNew ? '<button class="fb-resolve">' + (comment.status === 'resolved' ? 'Reopen' : 'Resolve') + '</button>' : ''}
-        ${!isNew ? '<button class="fb-delete">Delete</button>' : ''}
+        <button class="fb-save">Update</button>
+        <button class="fb-resolve">${comment.status === 'resolved' ? 'Reopen' : 'Resolve'}</button>
+        <button class="fb-delete">Delete</button>
         <button class="fb-cancel">Cancel</button>
       </div>
     `;
@@ -436,25 +442,77 @@ const FeedbackOverlay = (() => {
       popup.remove();
     });
 
-    const resolveBtn = popup.querySelector('.fb-resolve');
-    if (resolveBtn) {
-      resolveBtn.addEventListener('click', () => {
-        comment.status = comment.status === 'resolved' ? 'open' : 'resolved';
-        saveFeedback().then(renderPins);
-        popup.remove();
-      });
-    }
+    popup.querySelector('.fb-resolve').addEventListener('click', () => {
+      comment.status = comment.status === 'resolved' ? 'open' : 'resolved';
+      saveFeedback().then(renderPins);
+      popup.remove();
+    });
 
-    const deleteBtn = popup.querySelector('.fb-delete');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', () => {
-        feedback.comments = feedback.comments.filter(c => c.id !== comment.id);
-        saveFeedback().then(renderPins);
-        popup.remove();
-      });
-    }
+    popup.querySelector('.fb-delete').addEventListener('click', () => {
+      feedback.comments = feedback.comments.filter(c => c.id !== comment.id);
+      saveFeedback().then(renderPins);
+      popup.remove();
+    });
 
     popup.querySelector('.fb-cancel').addEventListener('click', () => popup.remove());
+
+    document.body.appendChild(popup);
+    popup.querySelector('textarea').focus();
+  }
+
+  function showNewPopup(metadata, anchor, onClose) {
+    document.querySelectorAll('.fb-popup').forEach(p => p.remove());
+    const popup = document.createElement('div');
+    popup.className = 'fb-popup';
+
+    let elementsHtml = '';
+    if (metadata.elements && metadata.elements.length > 0) {
+      const names = metadata.elements.map(e => e.text || e.selector).join(', ');
+      elementsHtml = `<div style="font-size:11px;color:#888;margin-bottom:6px;">Elements: ${names}</div>`;
+    }
+
+    popup.innerHTML = `
+      ${elementsHtml}
+      <textarea placeholder="What should change here?"></textarea>
+      <div class="fb-actions">
+        <button class="fb-save">Add</button>
+        <button class="fb-cancel">Cancel</button>
+      </div>
+    `;
+
+    const rect = anchor.getBoundingClientRect();
+    popup.style.left = Math.min(rect.left + window.scrollX, window.innerWidth - 300) + 'px';
+    popup.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+
+    const cleanup = () => {
+      popup.remove();
+      anchor.remove();
+      if (onClose) onClose();
+    };
+
+    popup.querySelector('.fb-save').addEventListener('click', () => {
+      const text = popup.querySelector('textarea').value;
+      if (!text.trim()) { showToast('Please enter a comment', 'warn'); return; }
+
+      const comment = {
+        id: uuid(),
+        type: metadata.type,
+        selector: metadata.selector,
+        elementText: metadata.elementText,
+        rect: metadata.rect,
+        elements: metadata.elements || null,
+        comment: text,
+        status: 'open',
+        timestamp: new Date().toISOString(),
+        version: feedback.version
+      };
+
+      feedback.comments.push(comment);
+      saveFeedback().then(renderPins);
+      cleanup();
+    });
+
+    popup.querySelector('.fb-cancel').addEventListener('click', cleanup);
 
     document.body.appendChild(popup);
     popup.querySelector('textarea').focus();
@@ -470,25 +528,37 @@ const FeedbackOverlay = (() => {
     e.preventDefault();
     e.stopPropagation();
 
-    const comment = {
-      id: uuid(),
+    // Check if this element already has an open comment
+    const existing = findExistingComment(el);
+    if (existing) {
+      // Find the pin for this comment and open its popup
+      const idx = feedback.comments.indexOf(existing);
+      const pins = document.querySelectorAll('.fb-pin');
+      if (pins[idx]) showPopup(existing, pins[idx]);
+      return;
+    }
+
+    // No existing comment — show popup for a NEW (uncommitted) annotation
+    // Create a temporary anchor at the element's position
+    const rect = el.getBoundingClientRect();
+    const anchor = document.createElement('div');
+    anchor.style.position = 'absolute';
+    anchor.style.left = (rect.right + window.scrollX - 8) + 'px';
+    anchor.style.top = (rect.top + window.scrollY - 8) + 'px';
+    anchor.style.width = '1px';
+    anchor.style.height = '1px';
+    document.body.appendChild(anchor);
+
+    // Highlight the target element
+    el.classList.add('fb-highlight');
+
+    showNewPopup({
       type: 'element',
       selector: getSelector(el),
       elementText: getElementText(el),
       rect: null,
-      comment: '',
-      status: 'open',
-      timestamp: new Date().toISOString(),
-      version: feedback.version
-    };
-
-    feedback.comments.push(comment);
-    renderPins();
-
-    // Show popup for the new comment
-    const pins = document.querySelectorAll('.fb-pin');
-    const lastPin = pins[pins.length - 1];
-    if (lastPin) showPopup(comment, lastPin);
+      elements: null
+    }, anchor, () => el.classList.remove('fb-highlight'));
   }
 
   function handleMouseDown(e) {
