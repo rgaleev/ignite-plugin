@@ -12,6 +12,7 @@ const FeedbackOverlay = (() => {
   let drawStart = null;
   let drawRect = null;
   let selectedElement = null;
+  let activeCleanup = null; // cleanup callback for uncommitted popup
   let toolbar = null;
   let overlay = null;
   let sidebar = null;
@@ -517,6 +518,8 @@ const FeedbackOverlay = (() => {
   }
 
   function showNewPopup(metadata, anchor, onClose) {
+    // Clean up any previous uncommitted popup
+    if (activeCleanup) { activeCleanup(); activeCleanup = null; }
     document.querySelectorAll('.fb-popup').forEach(p => p.remove());
     const popup = document.createElement('div');
     popup.className = 'fb-popup';
@@ -541,10 +544,12 @@ const FeedbackOverlay = (() => {
     popup.style.top = (rect.bottom + window.scrollY + 8) + 'px';
 
     const cleanup = () => {
+      activeCleanup = null;
       popup.remove();
       anchor.remove();
       if (onClose) onClose();
     };
+    activeCleanup = cleanup;
 
     popup.querySelector('.fb-save').addEventListener('click', () => {
       const text = popup.querySelector('textarea').value;
@@ -682,7 +687,8 @@ const FeedbackOverlay = (() => {
 
   function handleKeyDown(e) {
     if (e.key === 'Escape') {
-      document.querySelectorAll('.fb-popup').forEach(p => p.remove());
+      if (activeCleanup) { activeCleanup(); activeCleanup = null; }
+      else { document.querySelectorAll('.fb-popup').forEach(p => p.remove()); }
       if (sidebar.classList.contains('open')) sidebar.classList.remove('open');
     }
   }
@@ -721,7 +727,8 @@ const FeedbackOverlay = (() => {
     // Close popups on outside click
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.fb-popup') && !e.target.closest('.fb-pin') && !e.target.closest('.fb-area-pin')) {
-        document.querySelectorAll('.fb-popup').forEach(p => p.remove());
+        if (activeCleanup) { activeCleanup(); activeCleanup = null; }
+        else { document.querySelectorAll('.fb-popup').forEach(p => p.remove()); }
       }
     });
   }

@@ -150,8 +150,8 @@ Run the feedback server in background:
    The mockups open in Preview mode — click links, explore the UI, try the flow.
 
    To give feedback, click "Feedback" in the toolbar:
-   1. Element mode — click any element, type your comment, hit Save
-   2. Area mode — draw a rectangle around a region, type your comment, hit Save
+   1. Element mode — click any element, type your comment, hit Add
+   2. Area mode — draw a rectangle around a region, type your comment, hit Add
    3. Click an existing pin to edit, resolve, or delete a comment
 
    When done annotating, run /ignite:review to process feedback.
