@@ -7,6 +7,7 @@ const FeedbackOverlay = (() => {
   let config = { mockup: '', serverPort: 3000 };
   let feedback = { mockup: '', version: 1, htmlHash: '', comments: [] };
   let mode = 'element'; // 'element' | 'area' | null
+  let overlayMode = 'preview'; // 'preview' | 'feedback'
   let isDrawing = false;
   let drawStart = null;
   let drawRect = null;
@@ -143,6 +144,20 @@ const FeedbackOverlay = (() => {
       }
       .fb-toolbar button:hover { background: #3d3d55; }
       .fb-toolbar button.active { background: #4361ee; border-color: #4361ee; }
+      .fb-mode-toggle {
+        display: flex; border: 1px solid #444; border-radius: 4px; overflow: hidden;
+      }
+      .fb-mode-toggle button {
+        border: none; border-radius: 0; margin: 0;
+        padding: 4px 12px; font-size: 12px;
+        background: #2d2d44; color: #aaa;
+      }
+      .fb-mode-toggle button.active {
+        background: #4361ee; color: white; border-color: #4361ee;
+      }
+      .fb-mode-toggle button:first-child { border-right: 1px solid #444; }
+      .fb-feedback-controls { display: flex; gap: 8px; }
+      .fb-feedback-controls.hidden { display: none; }
       .fb-toolbar .fb-spacer { flex: 1; }
       .fb-toolbar .fb-badge {
         background: #e74c3c; color: white; border-radius: 10px;
@@ -223,8 +238,14 @@ const FeedbackOverlay = (() => {
     toolbar.className = 'fb-toolbar';
     toolbar.innerHTML = `
       <strong>Ignite Feedback</strong>
-      <button class="fb-mode-element active" title="Click elements to annotate">Element</button>
-      <button class="fb-mode-area" title="Draw rectangle to annotate area">Area</button>
+      <div class="fb-mode-toggle">
+        <button class="fb-toggle-preview active" title="Explore the mockup interactively">Preview</button>
+        <button class="fb-toggle-feedback" title="Switch to annotation mode">Feedback</button>
+      </div>
+      <div class="fb-feedback-controls hidden">
+        <button class="fb-mode-element active" title="Click elements to annotate">Element</button>
+        <button class="fb-mode-area" title="Draw rectangle to annotate area">Area</button>
+      </div>
       <span class="fb-spacer"></span>
       <span class="fb-comment-count"></span>
       <button class="fb-btn-orphans" title="Show orphaned comments" style="display:none">Orphaned</button>
@@ -236,6 +257,9 @@ const FeedbackOverlay = (() => {
     toolbar.querySelector('.fb-mode-area').addEventListener('click', () => setMode('area'));
     toolbar.querySelector('.fb-btn-export').addEventListener('click', exportFeedback);
     toolbar.querySelector('.fb-btn-orphans').addEventListener('click', toggleSidebar);
+
+    toolbar.querySelector('.fb-toggle-preview').addEventListener('click', () => setOverlayMode('preview'));
+    toolbar.querySelector('.fb-toggle-feedback').addEventListener('click', () => setOverlayMode('feedback'));
   }
 
   function createSidebar() {
@@ -253,6 +277,16 @@ const FeedbackOverlay = (() => {
     toolbar.querySelector('.fb-mode-element').classList.toggle('active', m === 'element');
     toolbar.querySelector('.fb-mode-area').classList.toggle('active', m === 'area');
     document.body.style.cursor = m === 'area' ? 'crosshair' : '';
+  }
+
+  function setOverlayMode(m) {
+    overlayMode = m;
+    toolbar.querySelector('.fb-toggle-preview').classList.toggle('active', m === 'preview');
+    toolbar.querySelector('.fb-toggle-feedback').classList.toggle('active', m === 'feedback');
+    const controls = toolbar.querySelector('.fb-feedback-controls');
+    controls.classList.toggle('hidden', m === 'preview');
+    document.body.style.cursor = (m === 'feedback' && mode === 'area') ? 'crosshair' : '';
+    renderPins();
   }
 
   function showToast(msg, type = 'ok') {
@@ -276,6 +310,10 @@ const FeedbackOverlay = (() => {
 
   function renderPins() {
     clearPins();
+    if (overlayMode === 'preview') {
+      updateCommentCount();
+      return;
+    }
     let orphanCount = 0;
     const orphans = [];
 
@@ -417,7 +455,7 @@ const FeedbackOverlay = (() => {
 
   // --- Event Handlers ---
   function handleElementClick(e) {
-    if (mode !== 'element') return;
+    if (overlayMode !== 'feedback' || mode !== 'element') return;
     const el = e.target;
     if (el.closest('.fb-toolbar') || el.closest('.fb-popup') || el.closest('.fb-sidebar') ||
         el.closest('.fb-pin') || el.closest('.fb-area-pin')) return;
@@ -447,7 +485,7 @@ const FeedbackOverlay = (() => {
   }
 
   function handleMouseDown(e) {
-    if (mode !== 'area') return;
+    if (overlayMode !== 'feedback' || mode !== 'area') return;
     if (e.target.closest('.fb-toolbar') || e.target.closest('.fb-popup') ||
         e.target.closest('.fb-sidebar') || e.target.closest('.fb-pin') || e.target.closest('.fb-area-pin')) return;
 
