@@ -147,10 +147,12 @@ Run the feedback server in background:
    - export.html — Stock export dashboard
    - settings.html — Configuration
 
-   How to annotate:
-   1. Click any element to add a comment (Element mode)
-   2. Switch to Area mode to draw rectangles around regions
-   3. Your annotations save automatically
+   The mockups open in Preview mode — click links, explore the UI, try the flow.
+
+   To give feedback, click "Feedback" in the toolbar:
+   1. Element mode — click any element, type your comment, hit Save
+   2. Area mode — draw a rectangle around a region, type your comment, hit Save
+   3. Click an existing pin to edit, resolve, or delete a comment
 
    When done annotating, run /ignite:review to process feedback.
 ```
