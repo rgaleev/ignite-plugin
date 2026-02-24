@@ -549,7 +549,9 @@ const FeedbackOverlay = (() => {
       anchor.remove();
       if (onClose) onClose();
     };
-    activeCleanup = cleanup;
+    // Defer activation so the current click/mouseup event cycle
+    // doesn't immediately trigger outside-click dismissal
+    setTimeout(() => { activeCleanup = cleanup; }, 0);
 
     popup.querySelector('.fb-save').addEventListener('click', () => {
       const text = popup.querySelector('textarea').value;
