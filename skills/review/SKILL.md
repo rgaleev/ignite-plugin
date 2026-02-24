@@ -29,14 +29,17 @@ Read all `.feedback.json` files. Build a summary table:
 ```
 Found [N] open comments across [N] mockups:
 
-| #  | Mockup          | Target                          | Comment                        |
-|----|-----------------|----------------------------------|-------------------------------|
-| 1  | upload.html     | #upload-btn "Upload Photos"     | Should support drag & drop    |
-| 2  | upload.html     | Area (120,340 400×200)          | This area feels cramped       |
-| 3  | analysis.html   | .keyword-chip "landscape"       | Need bulk editing for keywords|
+| #  | Mockup          | Target                                       | Comment                        |
+|----|-----------------|----------------------------------------------|-------------------------------|
+| 1  | upload.html     | #upload-btn "Upload Photos"                  | Should support drag & drop    |
+| 2  | upload.html     | Area: #upload-btn, #file-input, .drop-zone   | This area feels cramped       |
+| 3  | analysis.html   | .keyword-chip "landscape"                    | Need bulk editing for keywords|
 
 Orphaned (selector broken): [N] comments — listed below
 ```
+
+For area comments: if the `elements` array is present and non-empty, display as "Area: selector1, selector2, ...".
+If `elements` is missing or empty (older feedback), fall back to "Area (x,y w×h)".
 
 For orphaned comments (status `orphaned` or selector can't be resolved), list separately with their original selector and element text.
 
