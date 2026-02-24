@@ -83,6 +83,53 @@ const FeedbackOverlay = (() => {
     return null;
   }
 
+  const SEMANTIC_TAGS = new Set([
+    'button', 'input', 'select', 'textarea', 'a',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'img', 'table', 'form', 'nav', 'label'
+  ]);
+
+  function detectElementsInArea(areaRect) {
+    const elements = [];
+    const seen = new Set();
+    const all = document.querySelectorAll('body *');
+
+    for (const el of all) {
+      if (el.closest('.fb-toolbar') || el.closest('.fb-popup') || el.closest('.fb-sidebar') ||
+          el.closest('.fb-pin') || el.closest('.fb-area-pin')) continue;
+
+      // Filter to meaningful elements
+      const tag = el.tagName.toLowerCase();
+      const hasId = !!el.id;
+      const isSemantic = SEMANTIC_TAGS.has(tag);
+      const hasRole = el.hasAttribute('role');
+      if (!hasId && !isSemantic && !hasRole) continue;
+
+      // Check bounding box overlap
+      const elRect = el.getBoundingClientRect();
+      const elAbsRect = {
+        x: elRect.left + window.scrollX,
+        y: elRect.top + window.scrollY,
+        w: elRect.width,
+        h: elRect.height
+      };
+
+      // Intersection check
+      const overlapX = elAbsRect.x < areaRect.x + areaRect.w && elAbsRect.x + elAbsRect.w > areaRect.x;
+      const overlapY = elAbsRect.y < areaRect.y + areaRect.h && elAbsRect.y + elAbsRect.h > areaRect.y;
+
+      if (overlapX && overlapY && elAbsRect.w > 0 && elAbsRect.h > 0) {
+        const selector = getSelector(el);
+        if (!seen.has(selector)) {
+          seen.add(selector);
+          elements.push({ selector, text: getElementText(el) });
+        }
+      }
+    }
+
+    return elements;
+  }
+
   // --- Server Communication ---
   const serverUrl = () => `http://localhost:${config.serverPort}`;
 
@@ -381,6 +428,8 @@ const FeedbackOverlay = (() => {
     const pin = document.createElement('div');
     pin.className = 'fb-pin' + (comment.status === 'resolved' ? ' resolved' : '');
     pin.textContent = idx + 1;
+    const elemCount = (comment.elements || []).length;
+    pin.title = comment.comment || (elemCount > 0 ? `${elemCount} elements` : 'Click to view');
     pin.style.position = 'absolute';
     pin.style.top = '-12px';
     pin.style.right = '-12px';
@@ -421,7 +470,14 @@ const FeedbackOverlay = (() => {
     const popup = document.createElement('div');
     popup.className = 'fb-popup';
 
+    let elementsInfo = '';
+    if (comment.elements && comment.elements.length > 0) {
+      const names = comment.elements.map(e => e.text || e.selector).join(', ');
+      elementsInfo = `<div style="font-size:11px;color:#888;margin-bottom:6px;">Elements: ${names}</div>`;
+    }
+
     popup.innerHTML = `
+      ${elementsInfo}
       <textarea placeholder="What should change here?">${comment.comment || ''}</textarea>
       <div class="fb-actions">
         <button class="fb-save">Update</button>
@@ -601,27 +657,27 @@ const FeedbackOverlay = (() => {
 
     if (w < 20 || h < 20) return; // Too small, ignore
 
-    const comment = {
-      id: uuid(),
+    const rect = { x, y, w, h };
+
+    // Detect elements inside the drawn area
+    const elements = detectElementsInArea(rect);
+
+    // Create a temporary visual area indicator
+    const areaIndicator = document.createElement('div');
+    areaIndicator.className = 'fb-area-pin';
+    areaIndicator.style.left = rect.x + 'px';
+    areaIndicator.style.top = rect.y + 'px';
+    areaIndicator.style.width = rect.w + 'px';
+    areaIndicator.style.height = rect.h + 'px';
+    document.body.appendChild(areaIndicator);
+
+    showNewPopup({
       type: 'area',
       selector: null,
       elementText: null,
-      rect: { x, y, w, h },
-      comment: '',
-      status: 'open',
-      timestamp: new Date().toISOString(),
-      version: feedback.version
-    };
-
-    feedback.comments.push(comment);
-    renderPins();
-
-    // Show popup for area
-    setTimeout(() => {
-      const areas = document.querySelectorAll('.fb-area-pin');
-      const lastArea = areas[areas.length - 1];
-      if (lastArea) showPopup(comment, lastArea);
-    }, 50);
+      rect: rect,
+      elements: elements
+    }, areaIndicator, () => areaIndicator.remove());
   }
 
   function handleKeyDown(e) {
