@@ -281,6 +281,13 @@ const FeedbackOverlay = (() => {
 
   function setOverlayMode(m) {
     overlayMode = m;
+    // Cancel any in-progress area draw
+    if (isDrawing) {
+      isDrawing = false;
+      if (drawRect) { drawRect.remove(); drawRect = null; }
+    }
+    // Remove any element highlight
+    document.querySelectorAll('.fb-highlight').forEach(el => el.classList.remove('fb-highlight'));
     toolbar.querySelector('.fb-toggle-preview').classList.toggle('active', m === 'preview');
     toolbar.querySelector('.fb-toggle-feedback').classList.toggle('active', m === 'feedback');
     const controls = toolbar.querySelector('.fb-feedback-controls');
