@@ -13,6 +13,7 @@ const FeedbackOverlay = (() => {
   let drawRect = null;
   let selectedElement = null;
   let activeCleanup = null; // cleanup callback for uncommitted popup
+  let suppressDismiss = false; // suppress outside-click dismiss for one tick
   let toolbar = null;
   let overlay = null;
   let sidebar = null;
@@ -549,9 +550,11 @@ const FeedbackOverlay = (() => {
       anchor.remove();
       if (onClose) onClose();
     };
-    // Defer activation so the current click/mouseup event cycle
-    // doesn't immediately trigger outside-click dismissal
-    setTimeout(() => { activeCleanup = cleanup; }, 0);
+    activeCleanup = cleanup;
+    // Suppress outside-click dismiss for one tick so the mouseup→click
+    // event sequence from area drawing doesn't immediately kill the popup
+    suppressDismiss = true;
+    setTimeout(() => { suppressDismiss = false; }, 0);
 
     popup.querySelector('.fb-save').addEventListener('click', () => {
       const text = popup.querySelector('textarea').value;
@@ -728,6 +731,7 @@ const FeedbackOverlay = (() => {
 
     // Close popups on outside click
     document.addEventListener('click', (e) => {
+      if (suppressDismiss) return;
       if (!e.target.closest('.fb-popup') && !e.target.closest('.fb-pin') && !e.target.closest('.fb-area-pin')) {
         if (activeCleanup) { activeCleanup(); activeCleanup = null; }
         else { document.querySelectorAll('.fb-popup').forEach(p => p.remove()); }

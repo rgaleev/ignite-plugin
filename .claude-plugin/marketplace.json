@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Project creation pipeline: idea → PRD → interactive mockups → design system → CLAUDE.md → GSD handoff",
-    "version": "0.2.1"
+    "version": "0.2.2"
   },
   "plugins": [
     {
       "name": "ignite",
       "source": "./",
       "description": "Project creation pipeline with 5 skills: prd (PRD generation), mockup (interactive HTML mockups with annotation overlay), review (feedback triage and PRD sync), design (design system with style options and token application), bootstrap (CLAUDE.md and GSD planning files generation).",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "author": {
         "name": "rgaleev"
       },
